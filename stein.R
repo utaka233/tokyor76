@@ -16,7 +16,7 @@ ground_truth <-
   mutate(truth = hit / AB)
 players <- ground_truth %>% pull(playerID)
 # 推定する際のデータの作成
-data <-
+dat <-
   as_tibble(Batting) %>%
   filter(playerID %in% players) %>%
   group_by(playerID) %>%
@@ -25,7 +25,7 @@ data <-
 
 # 推定
 # 最尤推定
-data %>%
+dat %>%
   mutate(MLE = hit / AB) %>%
   inner_join(y = ground_truth, by = "playerID") %>%
   select(playerID, MLE, truth)
@@ -38,10 +38,10 @@ stein_estimator <- function(mle, total, size, ground_mean){    # x : vector of h
 }
 # Stein推定量
 result <-
-  data %>%
+  dat %>%
   mutate(MLE = hit / AB) %>%
   mutate(ground_mean = mean(MLE)) %>%
-  mutate(stein = stein_estimator(MLE, median(data$AB), nrow(data), ground_mean)) %>%
+  mutate(stein = stein_estimator(MLE, median(dat$AB), nrow(dat), ground_mean)) %>%
   inner_join(y = ground_truth, by = "playerID") %>%
   select(playerID, ground_mean, MLE, stein, truth)
 result
